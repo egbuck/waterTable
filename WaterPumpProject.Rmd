@@ -96,7 +96,7 @@ length(water[bool, "population"])
 
 
 ```{r}
-str(water)
+#str(water)
 ```
 
 We need to get rid of factors with too many levels, as these take up too many degrees of freedom for our predictions, and will help us with variable reduction.
@@ -124,7 +124,7 @@ redWater <- subset(redWater, select = -c(recorded_by))   # Factor with only 1 le
 
 
 ```{r}
-str(redWater)
+#str(redWater)
 ```
 
 There are many categorical predictors, and after looking again at the structure of the dataset we realize that many of them are duplicates of others.  By this we mean that some columns are exactly the same, or that some predictors just group some of the labels together, but represent the same measurement.  We examined each variable using the table() R command, to see all of the unique label names and counts and compare them with their similar counterparts.  In most cases, we chose to keep the predictor with less labels (or the one that grouped together more categories) so that there will be less parameter estimates, saving important degrees of freedom.  However, if we thought that the labels should not have been grouped together, and that their responses would vary significantly, we chose to keep the predictor with more variables.  The choices are summarized in the table below.
@@ -151,10 +151,12 @@ redWater <- subset(redWater, select = -c(extraction_type,
                                          source_type,
                                          source_class,
                                          waterpoint_type))
+dim(redWater)
+```
+
+```{r}
 redWater$source[redWater$source == "unknown"] <- "other"
-levels(redWater$source) <- c("dam", "hand dtw", "lake", "machine dbh", "other",
-                             "randwater harvesting", "river", "shallow well",
-                             "spring")
+levels(redWater$source) <- droplevels(redWater$source)
 dim(redWater)
 ```
 
