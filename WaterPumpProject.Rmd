@@ -6,6 +6,7 @@ output: html_notebook
 
 
 ```{r}
+set.seed(42)
 water <- read.csv("waterTraining.csv")
 trainLabels <- read.csv("waterTrainingLabels.csv")
 test <- read.csv("waterTest.csv")
