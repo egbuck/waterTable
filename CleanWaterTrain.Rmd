@@ -37,18 +37,7 @@ which_numeric = sapply(1:ncol(water),
 str(water[, which_numeric][, -1])  # getting rid of id and seeing just numeric columns
 ```
 
-
-```{r}
-# are these normally distributed?
-library(ggplot2)
-numCols <- colnames(water[, which_numeric][, -1])
-for (col in numCols){
-  print(col)
-  print(ggplot(water, aes_string(x = col)) + geom_histogram(bins = 1 + 3.322*log10(length(water[,col]))))
-}
-```
-
-None of them really resemble a normal distribution, and thus, perhaps logistic regression will produce desired results (though there are 3 categories for the response, not binary).
+After investigating histograms of the numerical variables, none of them really resemble a normal distribution, and thus, perhaps logistic regression will produce desired results (though there are 3 categories for the response, not binary).
 
 Let's check again for any missing data
 
@@ -72,32 +61,6 @@ NZero
 ```{r}
 dim(water)
 head(water[, "amount_tsh"])
-```
-
-```{r}
- bool <- water[, "population"] != 0
-hist(water[bool, "population"])
-length(water[bool, "population"])
-nrow(water)
-summary(water[bool, "population"])
-print(ggplot(water[bool,], aes_string(x = "population")) + geom_histogram(bins = 1 + 3.322*log10(length(water[bool,"population"]))) + xlim(0, 500))
-```
-
-
-```{r}
-
-bool2 <- (water[, "population"] == 0) & (water[, "gps_height"] == 0)
-nrow(water[bool2, ])
-length(water[, "population"] == 0)
-length(water[bool, "population"])
-```
-
-
-
-
-
-```{r}
-#str(water)
 ```
 
 We need to get rid of factors with too many levels, as these take up too many degrees of freedom for our predictions, and will help us with variable reduction.
@@ -159,6 +122,28 @@ dim(redWater)
 redWater$source[redWater$source == "unknown"] <- "other"
 levels(redWater$source) <- droplevels(redWater$source)
 dim(redWater)
+```
+
+```{r}
+# 3 columns that have blank entries
+sum(redWater$public_meeting == "")      # 3,334 blanks
+sum(redWater$scheme_management == "")   # 3,877 blanks
+sum(redWater$permit == "")              # 3,056 blanks
+```
+
+Saw one person online that dropped public_meeting and permit, and
+filled scheme_management with "other"
+https://github.com/vaibhavshukla182/Tanzania-Water-Supply/blob/master/data_visualisation_and_cleaning.ipynb
+
+```{r}
+# how many rows have any blanks?
+sum(redWater$public_meeting == "" | redWater$scheme_management == "" | redWater$permit == "")     # 9,559 -> too many to just remove
+```
+
+```{r}
+table(redWater$public_meeting)      # not obvious... maybe False?
+table(redWater$scheme_management)   # None? Other?
+table(redWater$permit)              # not obvious... maybe False?
 ```
 
 
