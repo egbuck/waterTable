@@ -9,7 +9,6 @@ output: html_notebook
 set.seed(42)
 water <- read.csv("waterTraining.csv")
 trainLabels <- read.csv("waterTrainingLabels.csv")
-test <- read.csv("waterTest.csv")
 ```
 
 
@@ -131,9 +130,6 @@ sum(redWater$scheme_management == "")   # 3,877 blanks
 sum(redWater$permit == "")              # 3,056 blanks
 ```
 
-Saw one person online that dropped public_meeting and permit, and
-filled scheme_management with "other"
-https://github.com/vaibhavshukla182/Tanzania-Water-Supply/blob/master/data_visualisation_and_cleaning.ipynb
 
 ```{r}
 # how many rows have any blanks?
@@ -141,11 +137,27 @@ sum(redWater$public_meeting == "" | redWater$scheme_management == "" | redWater$
 ```
 
 ```{r}
-table(redWater$public_meeting)      # not obvious... maybe False?
-table(redWater$scheme_management)   # None? Other?
-table(redWater$permit)              # not obvious... maybe False?
+#Merge many levels into "Other" for scheme management
+# make another label "Unknown" for blanks in public_meet and permit
+# 
+table(redWater$public_meeting)      # Not obvious -> name "Unknown"
+table(redWater$scheme_management)   # None, SWC, Trust, Blanks -> Other
+table(redWater$permit)              # Not obvious -> name "Unknown
 ```
 
+```{r}
+library(plyr)
+levels(redWater$public_meeting)[levels(redWater$public_meeting)==""] <- "Unknown" 
+table(redWater$public_meeting)
+levels(redWater$permit)[levels(redWater$permit)==""] <- "Unknown" 
+table(redWater$permit)
+
+levels(redWater$scheme_management) <- c("Other", "Company", "Other", "Other",
+                                "Parastatal", "Private operator", "Other",
+                                "Other", "VWC", "Water authority", "Water Board",
+                                "WUA", "WUG")
+table(redWater$scheme_management)
+```
 
 ```{r}
 # write reduced data to file
