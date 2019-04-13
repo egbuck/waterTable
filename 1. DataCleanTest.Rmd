@@ -1,0 +1,133 @@
+---
+title: "Water Pump Analysis: Prepping the Tess data set"
+output: html_notebook
+---
+
+
+
+```{r}
+set.seed(42)
+water_Test <- read.csv("TestDataValues.csv")
+```
+
+
+```{r}
+dim(water_Test)
+colnames(water_Test)
+```
+
+We are trying to predict whether a water pipe is functional, non-functional, or functional but needs repair. After investigating histograms of the numerical variables, none of them really resemble a normal distribution, and thus, perhaps logistic regression will produce desired results (though there are 3 categories for the response, not binary).
+
+
+```{r}
+NZero <- data.frame(ColName = c("0", "0"), numZeros = c(0,0))
+for (col in colnames(water_Test)) {
+  nzero <- sum(water_Test[, col] == 0)
+  NZero <- rbind(NZero, data.frame(ColName = c(col), numZeros = c(nzero)))
+}
+NZero <- NZero[3:nrow(NZero),]
+NZero
+```
+
+
+We need to get rid of factors with too many levels, as these take up too many degrees of freedom for our predictions, and will help us with variable reduction.
+
+```{r}
+redWater <- water_Test[, -indexes]
+redWater <- subset(redWater, select = -c(recorded_by))   # Factor with only 1 level
+```
+
+There are many categorical predictors, and after looking again at the structure of the dataset we realize that many of them are duplicates of others.  By this we mean that some columns are exactly the same, or that some predictors just group some of the labels together, but represent the same measurement.  We examined each variable using the table() R command, to see all of the unique label names and counts and compare them with their similar counterparts.  In most cases, we chose to keep the predictor with less labels (or the one that grouped together more categories) so that there will be less parameter estimates, saving important degrees of freedom.  However, if we thought that the labels should not have been grouped together, and that their responses would vary significantly, we chose to keep the predictor with more variables.  The choices are summarized in the table below.
+
+| Removed predictors                        | Represented By        |
+|:-----------------------------------------:|:---------------------:|
+| extraction_type, extraction_type_group    | extraction_type_class |
+| management                                | management_group      |
+| payment_type                              | payment               |
+| water_quality                             | quality_group         |
+| quantity_group                            | quantity              |
+| source_type, source_class                 | source                |
+| waterpoint_type                           | waterpoint_type_group |
+
+```{r}
+# source_type and source_class is shown in source column, but
+#    we need to combine "unknown" category into "other"
+redWater <- subset(redWater, select = -c(extraction_type, 
+                                         extraction_type_group,
+                                         management,
+                                         payment_type,
+                                         water_quality,
+                                         quantity_group,
+                                         source_type,
+                                         source_class,
+                                         waterpoint_type))
+dim(redWater)
+```
+
+```{r}
+redWater$source[redWater$source == "unknown"] <- "other"
+levels(redWater$source) <- droplevels(redWater$source)
+dim(redWater)
+```
+
+```{r}
+# 3 columns that have blank entries
+sum(redWater$public_meeting == "")      # 821 blanks
+sum(redWater$scheme_management == "")   # 969 blanks
+sum(redWater$permit == "")              # 737 blanks
+```
+
+
+```{r}
+# how many rows have any blanks?
+sum(redWater$public_meeting == "" | redWater$scheme_management == "" | redWater$permit == "")     
+# 2352 -> too many to just remove
+```
+
+```{r}
+#Merge many levels into "Other" for scheme management
+# make another label "Unknown" for blanks in public_meet and permit
+# 
+table(redWater$public_meeting)      # Not obvious -> name "Unknown"
+table(redWater$scheme_management)   # None, SWC, Trust, Blanks -> Other
+table(redWater$permit)              # Not obvious -> name "Unknown
+```
+
+```{r}
+library(plyr)
+levels(redWater$public_meeting)[levels(redWater$public_meeting)==""] <- "Unknown" 
+table(redWater$public_meeting)
+levels(redWater$permit)[levels(redWater$permit)==""] <- "Unknown" 
+table(redWater$permit)
+
+levels(redWater$scheme_management) <- c("Other", "Company", "Other", "Other",
+                                "Parastatal", "Private operator", "Other",
+                                "Other", "VWC", "Water authority", "Water Board",
+                                "WUA", "WUG")
+table(redWater$scheme_management)
+```
+
+```{r}
+# Check out construction_year
+hist(redWater$construction_year, labels = TRUE)
+```
+
+```{r}
+# huge gap in possible values -> really just bunch of 0's which are unknowns.
+sum(redWater$construction_year == 0)
+class(redWater$construction_year)
+# makes more sense to make this a factor with ranges, so able to have "unknown"
+hist(redWater$construction_year[redWater$construction_year != 0], 
+     breaks = seq(1960, 2020, 10), labels = TRUE, main = "construction year histogram", ylim = c(0, 20000))
+
+# change to factor by decade
+redWater$construction_year <- cut(redWater$construction_year, breaks = c(-1, 1960, 1970, 1980, 1990, 2000, 2010, 2020), labels = c('Unknown', "1960s", '1970s', '1980s', '1990s', '2000s', '2010s'), right = FALSE)
+
+table(redWater$construction_year)
+```
+
+```{r}
+# write reduced data to file
+write.csv(redWater, "ReducedWaterTest.csv")
+```
+
