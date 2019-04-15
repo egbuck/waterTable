@@ -1,0 +1,38 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Load and split data
+```{r}
+library(randomForest)
+library(caret)
+data_set <- read.csv("ReducedWaterTrainingImputed.csv")
+
+data_set <- data_set[-1]
+cols <- colnames(data_set)
+labels <- read.csv("waterTrainingLabels.csv")
+data_set <- cbind(labels, data_set)
+
+train_size <- floor(0.8* nrow(data_set))
+train_index <- sample(seq_len(nrow(data_set)), size = train_size)
+
+train_set<- data_set[train_index,]
+test_set <- data_set[-train_index,]
+```
+
+
+Random Forest
+
+```{r}
+set.seed(42)
+model_forest <- randomForest(as.factor(status_group) ~ ., data = train_set[-1], 
+                             importance = TRUE, ntree = 100, nodesize = 1, mtry =5)
+pred_forest_train <- predict(model_forest, train_set[-1])
+pred_forest_test <- predict(model_forest, newdata = test_set[-1])
+confusionMatrix(pred_forest_test, test_set$status_group)$overall['Accuracy']
+varImpPlot(model_forest)
+```
+Accuracy 
+0.8039562 
+

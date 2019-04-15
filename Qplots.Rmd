@@ -1,0 +1,43 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+
+train_values <- read.csv("waterTraining.csv")
+labels <- read.csv("waterTrainingLabels.csv")
+data_set <- merge(labels, train_values)
+
+# Qplot for quantity
+qplot(quantity, data=data_set, geom="bar", fill=status_group) + 
+  theme(legend.position = "top")
+
+# Qplot for quality_group
+qplot(quality_group, data=data_set, geom="bar", fill=status_group) + 
+  theme(legend.position = "top")
+
+# Qplot for waterpoint_type
+qplot(waterpoint_type, data=data_set, geom="bar", fill=status_group) + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x=element_text(angle = -20, hjust = 0))
+
+# Qplot for region
+qplot(region, data=data_set, geom="bar", fill=status_group) + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x=element_text(angle = -20, hjust = 0))
+
+# Qplot for water_quality        
+qplot(water_quality, data=data_set, geom="bar", fill=status_group) + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x=element_text(angle = -20, hjust = 0))
+
+# Qplot for quality_group
+qplot(quality_group, data=data_set, geom="bar", fill=status_group) + 
+  theme(legend.position = "top") +  
+  theme(axis.text.x=element_text(angle = -20, hjust = 0))
+
+```
+
+

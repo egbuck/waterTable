@@ -1,0 +1,105 @@
+---
+title: "Pump it up"
+output: html_notebook
+---
+
+
+```{r}
+library(randomForest)
+library(caret)
+
+train_values <- read.csv("ReducedWaterTraining.csv")
+labels <- read.csv("waterTrainingLabels.csv")
+train_values <- train_values[-1]
+data_set <- merge(labels, train_values)
+
+
+train_size <- floor(0.8* nrow(data_set))
+train_index <- sample(seq_len(nrow(data_set)), size = train_size)
+
+#Splitting the data set into training and test set
+train_set <- data_set[train_index,]
+test_set <- data_set[-train_index,]
+```
+
+
+Random Forest
+
+```{r}
+set.seed(42)
+model_forest <- randomForest(as.factor(status_group) ~ ., data = train_set[-1], 
+                             importance = TRUE, ntree = 100, nodesize = 1, mtry =5)
+pred_forest_train <- predict(model_forest, train_set[-1])
+pred_forest_test <- predict(model_forest, newdata = test_set[-1])
+confusionMatrix(pred_forest_test, test_set$status_group)$overall['Accuracy']
+
+varImpPlot(model_forest)
+```
+ Accuracy 
+0.8058923 
+
+```{r}
+test_values <- read.csv("ReducedWaterTest.csv")
+test_values <- test_values[-1]
+View(test_values)
+colnames(test_values)
+colnames(data_set)
+pred_forest_test_r <- predict(model_forest, newdata = test_values[-1])
+```
+If i try to test it on the "real" test set I get the following error: "Error in predict.randomForest(model_forest, newdata = test_values[-1]) : New factor levels not present in the training data" - And i found this on stackoverflow :
+"RF handles factors by one-hot encoding them. It makes one new dummy column for every level of the factor variable. When there are new or different factor levels in a scoring dataframe, bad things happen.
+
+If the train and test existed together in the same data structure at the point that the factor was defined, there isn't a problem. When the test has its factor defined separately then you get issues."
+
+I'm not sure how to fix it.
+
+
+
+Testing different values for ntree
+
+```{r}
+control <- trainControl(method = 'repeatedcv',
+                        number = 10,
+                        repeats = 3,
+                        search = 'grid',
+                        p = 0.8)
+#create tunegrid
+tunegrid <- expand.grid(.mtry = 5)
+modellist <- list()
+
+#train with different ntree parameters
+for (ntree in c(10,20,50,100)){
+  set.seed(123)
+  fit <- train(as.factor(status_group)~.,
+               data = data_set,
+               method = 'rf',
+               metric = 'Accuracy',
+               tuneGrid = tunegrid,
+               trControl = control,
+               ntree = ntree)
+  key <- toString(ntree)
+  print(fit)
+  modellist[[key]] <- fit
+}
+
+#Compare results
+results <- resamples(modellist)
+summary(results)
+```
+
+Models: 10, 20, 50, 100 
+Number of resamples: 30 
+
+Accuracy 
+         Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+10  0.7441508 0.7549029 0.7586091 0.7582605 0.7617745 0.7663300    0
+20  0.7539135 0.7605522 0.7640572 0.7637151 0.7673078 0.7706685    0
+50  0.7559333 0.7643098 0.7683697 0.7673178 0.7704387 0.7754587    0
+100 0.7554284 0.7658867 0.7685638 0.7680135 0.7708009 0.7764686    0
+
+Kappa 
+         Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+10  0.4961154 0.5219733 0.5301892 0.5287641 0.5363236 0.5475466    0
+20  0.5151187 0.5326354 0.5413497 0.5391989 0.5468924 0.5533660    0
+50  0.5236245 0.5394780 0.5483503 0.5461919 0.5518785 0.5637198    0
+100 0.5219178 0.5431126 0.5482275 0.5473406 0.5536184 0.5651403    0
