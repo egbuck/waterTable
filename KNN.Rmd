@@ -1,0 +1,122 @@
+---
+title: "KNN"
+author: "Xin"
+date: "April 15, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project")
+#setwd("C:/Users/snowi/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/Project")
+
+library(onehot)
+library(caret)
+
+X = read.csv("ReducedWaterTraining.csv")
+y = read.csv("Training set labels.csv")
+
+X = as.data.frame(predict(onehot(X, max_levels = 21), X))
+
+data_set = merge(X, y, by="id")
+data_set = subset(data_set, select=-c(id, X))
+
+set.seed(996)
+
+random = data_set[sample(1:nrow(data_set)),]
+test_data = random[1:floor(0.25 * nrow(data_set)),]
+train_data = random[-(1:floor(0.25 * nrow(data_set))),]
+```
+
+
+
+KNN with CV
+```{r}
+#start.time = Sys.time()
+
+ctrl = trainControl(method="repeatedcv", number = 10,repeats = 3) 
+knnFit = train(status_group ~ ., data = train_data, method = "knn", metric = "Accuracy", 
+               trControl = ctrl, tuneLength = 50)
+plot(knnFit)
+knnPredict = predict(knnFit,newdata = test_data)
+confusionMatrix(knnPredict, test_data$status_group)
+
+#end.time = Sys.time()
+#time.taken = end.time - start.time
+#time.taken 
+
+load("KNN1.RData")
+```
+
+```{r}
+print(knnFit)
+```
+
+```{r}
+plot(knnFit)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+Plain KNN
+```{r}
+smp_size = floor(0.75 * nrow(data_set))
+set.seed(996)
+train_ind = sample(seq_len(nrow(data_set)), size = smp_size)
+X = subset(X, select = -c(id, X))
+X_train = X[train_ind, ]
+X_test = X[-train_ind, ]
+y = subset(y, select = -c(id))
+y_train = y[train_ind, ]
+y_test = y[-train_ind, ]
+
+neigh = round(sqrt(nrow(data_set))) + 1
+accuracy = c()
+for (i in c(1:neigh*2)) {
+model = knn(train = X_train, test = X_test, cl = y_train, k = i)
+accuracy = c(accuracy, mean(y_test == model))
+}
+
+load("KNN2.RData")
+plot(accuracy)
+```
+
+
+
+
+
+
+
+
+
+
+
+Reduced KNN
+```{r}
+X = read.csv("ReducedWaterTraining.csv")
+y = read.csv("Training set labels.csv")
+
+data_set = merge(X, y, by="id")
+data_set = subset(data_set, select=-c(id, X))
+data_set_reduce = subset(data_set, select=-c(region, scheme_management))
+
+#This part keeps erroring
+model_lvq = train(status_group~., data = data_set_reduce, 
+                  method="lvq", preProcess="scale", trControl=ctrl)
+importance = varImp(model, scale=FALSE)
+print(importance)
+plot(importance)
+```
