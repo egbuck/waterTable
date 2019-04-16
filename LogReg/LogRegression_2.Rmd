@@ -20,10 +20,10 @@ library(e1071)
 Load the data:
 
 ```{r}
-setwd("~/1_wiliiam_and_mary/classes/DataMining/DataMining-Assignments/TeamProject")
-clean_data <- read.csv("ReducedWaterTraining.csv")
+#setwd("~/1_wiliiam_and_mary/classes/DataMining/DataMining-Assignments/TeamProject")
+clean_data <- read.csv("../Data/ReducedWaterTraining.csv")
 clean_data <- clean_data[-1]
-trainLabels <- read.csv("TrainingSetLabels.csv")
+trainLabels <- read.csv("../Data/waterTrainingLabels.csv")
 head(clean_data, 2)
 ```
 
@@ -110,7 +110,7 @@ log_conf
 Try to get predictions for the complete Test data:
 
 ```{r}
-clean_test <- read.csv("ReducedWaterTest.csv")
+clean_test <- read.csv("../Data/ReducedWaterTest.csv")
 head(clean_test,2)
 ```
 
@@ -128,7 +128,7 @@ head(clean_test, 2)
 
 ```{r}
 # write new label data to file
-write.csv(clean_test, "Label_Log_1.csv")
+write.csv(clean_test, "../Data/Label_Log_1.csv")
 ```
 
 Got score of 0.7143 for the competition submission. 

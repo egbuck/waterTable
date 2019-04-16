@@ -8,8 +8,8 @@ output: html_notebook
 library(randomForest)
 library(caret)
 
-train_values <- read.csv("ReducedWaterTraining.csv")
-labels <- read.csv("waterTrainingLabels.csv")
+train_values <- read.csv("../Data/ReducedWaterTraining.csv")
+labels <- read.csv("../Data/waterTrainingLabels.csv")
 train_values <- train_values[-1]
 data_set <- merge(labels, train_values)
 
@@ -39,7 +39,7 @@ varImpPlot(model_forest)
 0.8058923 
 
 ```{r}
-test_values <- read.csv("ReducedWaterTest.csv")
+test_values <- read.csv("../Data/ReducedWaterTest.csv")
 test_values <- test_values[-1]
 View(test_values)
 colnames(test_values)

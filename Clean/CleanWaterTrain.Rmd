@@ -7,8 +7,8 @@ output: html_notebook
 
 ```{r}
 set.seed(42)
-water <- read.csv("waterTraining.csv")
-trainLabels <- read.csv("waterTrainingLabels.csv")
+water <- read.csv("../Data/waterTraining.csv")
+trainLabels <- read.csv("../Data/waterTrainingLabels.csv")
 ```
 
 
@@ -180,6 +180,6 @@ table(redWater$construction_year)
 
 ```{r}
 # write reduced data to file
-write.csv(redWater, "ReducedWaterTraining.csv")
+write.csv(redWater, "../Data/ReducedWaterTraining.csv")
 ```
 

@@ -11,14 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Read in data, combine data, subset data, etc... 
 ```{r}
-setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project")
+#setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project")
 #setwd("C:/Users/snowi/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/Project")
 
 library(onehot)
 library(caret)
 
-X = read.csv("ReducedWaterTraining.csv")
-y = read.csv("Training set labels.csv")
+X = read.csv("../Data/ReducedWaterTraining.csv")
+y = read.csv("waterTrainingLabels.csv")
 
 X = as.data.frame(predict(onehot(X, max_levels = 21), X))
 
@@ -106,8 +106,8 @@ plot(accuracy)
 
 Reduced KNN
 ```{r}
-X = read.csv("ReducedWaterTraining.csv")
-y = read.csv("Training set labels.csv")
+X = read.csv("../Data/ReducedWaterTraining.csv")
+y = read.csv("../Data/waterTrainingLabels.csv")
 
 X_reduced = subset(X, select=-c(region, scheme_management, amount_tsh, population, gps_height, num_private))
 X_reduced = as.data.frame(predict(onehot(X_reduced, max_levels = 9), X_reduced))

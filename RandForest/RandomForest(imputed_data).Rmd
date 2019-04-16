@@ -7,11 +7,11 @@ Load and split data
 ```{r}
 library(randomForest)
 library(caret)
-data_set <- read.csv("ReducedWaterTrainingImputed.csv")
+data_set <- read.csv("../Data/ReducedWaterTrainingImputed.csv")
 
 data_set <- data_set[-1]
 cols <- colnames(data_set)
-labels <- read.csv("waterTrainingLabels.csv")
+labels <- read.csv("../Data/waterTrainingLabels.csv")
 data_set <- cbind(labels, data_set)
 
 train_size <- floor(0.8* nrow(data_set))
