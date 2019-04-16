@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
+Read in data, combine data, subset data, etc... 
 ```{r}
 setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project")
 #setwd("C:/Users/snowi/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/Project")
@@ -71,7 +71,7 @@ plot(knnFit)
 
 
 
-Plain KNN
+Plain KNN, tested on over 200 K's
 ```{r}
 smp_size = floor(0.75 * nrow(data_set))
 set.seed(996)
@@ -109,14 +109,30 @@ Reduced KNN
 X = read.csv("ReducedWaterTraining.csv")
 y = read.csv("Training set labels.csv")
 
-data_set = merge(X, y, by="id")
-data_set = subset(data_set, select=-c(id, X))
-data_set_reduce = subset(data_set, select=-c(region, scheme_management))
+X_reduced = subset(X, select=-c(region, scheme_management, amount_tsh, population, gps_height, num_private))
+X_reduced = as.data.frame(predict(onehot(X_reduced, max_levels = 9), X_reduced))
 
-#This part keeps erroring
-model_lvq = train(status_group~., data = data_set_reduce, 
-                  method="lvq", preProcess="scale", trControl=ctrl)
-importance = varImp(model, scale=FALSE)
-print(importance)
-plot(importance)
+data_set_reduced = merge(X_reduced, y, by="id")
+data_set_reduced = subset(data_set_reduced, select=-c(id, X))
+
+set.seed(996)
+
+random_reduced = data_set_reduced[sample(1:nrow(data_set_reduced)),]
+test_data_reduced = random_reduced[1:floor(0.25 * nrow(data_set_reduced)),]
+train_data_reduced = random_reduced[-(1:floor(0.25 * nrow(data_set_reduced))),]
+
+start.time = Sys.time()
+ctrl = trainControl(method="repeatedcv", number = 10, repeats = 3) 
+knnFit_reduced = train(status_group ~ ., data = train_data_reduced, method = "knn", 
+               metric = "Accuracy", trControl = ctrl, 
+               preProcess = c("center", "scale"), tuneLength = 50)
+plot(knnFit_reduced)
+knnPredict_reduced = predict(knnFit_reduced,newdata = test_data_reduced)
+confusionMatrix(knnPredict_reduced, test_data_reduced$status_group)
+end.time = Sys.time()
+time.taken = end.time - start.time
+time.taken 
+
+#load("KNN3.RData")
+
 ```
