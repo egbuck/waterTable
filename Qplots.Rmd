@@ -6,8 +6,8 @@ output: html_notebook
 ```{r}
 library(ggplot2)
 
-train_values <- read.csv("waterTraining.csv")
-labels <- read.csv("waterTrainingLabels.csv")
+train_values <- read.csv("Data/waterTraining.csv")
+labels <- read.csv("Data/waterTrainingLabels.csv")
 data_set <- merge(labels, train_values)
 
 # Qplot for quantity
