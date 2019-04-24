@@ -18,7 +18,7 @@ library(onehot)
 library(caret)
 
 X = read.csv("../Data/ReducedWaterTraining.csv")
-y = read.csv("waterTrainingLabels.csv")
+y = read.csv("../Data/waterTrainingLabels.csv")
 
 X = as.data.frame(predict(onehot(X, max_levels = 21), X))
 

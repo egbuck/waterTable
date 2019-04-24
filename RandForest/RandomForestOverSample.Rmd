@@ -1,0 +1,113 @@
+---
+title: "RandForestOverSample"
+author: "Ethan Buck"
+date: "April 23, 2019"
+output: html_document
+---
+
+```{r}
+library(randomForest)
+library(caret)
+set.seed(42)
+
+train_values <- read.csv("../Data/ReducedWaterTraining.csv")
+labels <- read.csv("../Data/waterTrainingLabels.csv")
+train_values <- train_values[-1]
+data_set <- merge(labels, train_values)
+```
+
+Train Test Split, but now with oversampling the 'needs repair' class.
+```{r}
+needRepInds <- which(data_set$status_group == 'functional needs repair')
+otherInds <- which(data_set$status_group != 'functional needs repair')
+
+train_size_needRep <- floor(1.5 * length(needRepInds))
+train_size_others <- floor(0.7 * nrow(data_set[-needRepInds,]))
+
+train_index_needRep <- sample(needRepInds, size = train_size_needRep, replace = TRUE)
+train_index_others <- sample(otherInds, size = train_size_others)
+
+train_index = c(train_index_needRep, train_index_others)
+
+#Splitting the data set into training and test set
+train_set <- data_set[train_index,]
+test_set <- data_set[-train_index,]
+```
+
+```{r}
+# checking to make sure no train set in test set
+test_check <- row.names(test_set)
+train_check <- row.names(train_set)
+for (testRowName in test_check) {
+  if (testRowName %in% train_check) {
+    print("NOOOO")
+    print(testRowName)
+  }
+}
+```
+
+Random Forest
+
+```{r}
+model_forest <- randomForest(as.factor(status_group) ~ ., data = train_set[-1], 
+                             importance = TRUE, ntree = 100, nodesize = 1, mtry =5)
+pred_forest_train <- predict(model_forest, train_set[-1])
+pred_forest_test <- predict(model_forest, newdata = test_set[-1])
+confusionMatrix(pred_forest_test, test_set$status_group)$overall['Accuracy']
+
+varImpPlot(model_forest)
+```
+ Accuracy 
+0.8058923 
+```{r}
+confusionMatrix(pred_forest_test, test_set$status_group)
+```
+
+```{r}
+test_values <- read.csv("../Data/ReducedWaterTest.csv")
+test_values <- test_values[-1]
+View(test_values)
+colnames(test_values)
+colnames(data_set)
+pred_forest_test_r <- predict(model_forest, newdata = test_values[-1])
+```
+If i try to test it on the "real" test set I get the following error: "Error in predict.randomForest(model_forest, newdata = test_values[-1]) : New factor levels not present in the training data" - And i found this on stackoverflow :
+"RF handles factors by one-hot encoding them. It makes one new dummy column for every level of the factor variable. When there are new or different factor levels in a scoring dataframe, bad things happen.
+
+If the train and test existed together in the same data structure at the point that the factor was defined, there isn't a problem. When the test has its factor defined separately then you get issues."
+
+I'm not sure how to fix it.
+
+
+
+Testing different values for ntree
+
+```{r}
+control <- trainControl(method = 'repeatedcv',
+                        number = 10,
+                        repeats = 3,
+                        search = 'grid',
+                        p = 0.8)
+#create tunegrid
+tunegrid <- expand.grid(.mtry = 5)
+modellist <- list()
+
+#train with different ntree parameters
+for (ntree in c(10,20,50,100)){
+  set.seed(123)
+  fit <- train(as.factor(status_group)~.,
+               data = data_set,
+               method = 'rf',
+               metric = 'Accuracy',
+               tuneGrid = tunegrid,
+               trControl = control,
+               ntree = ntree)
+  key <- toString(ntree)
+  print(fit)
+  modellist[[key]] <- fit
+}
+
+#Compare results
+results <- resamples(modellist)
+summary(results)
+```
