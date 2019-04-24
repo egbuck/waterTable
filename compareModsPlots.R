@@ -82,3 +82,5 @@ plotBars(broken, 'Actual Class: Functional Needs Repair')
 ggsave('BrokenBarComps.png')
 plotBars(replace, 'Actual Class: Non Functional')
 ggsave('ReplaceBarComps.png')
+
+
