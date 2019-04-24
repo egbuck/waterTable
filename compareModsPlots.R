@@ -84,3 +84,20 @@ plotBars(replace, 'Actual Class: Non Functional')
 ggsave('ReplaceBarComps.png')
 
 
+
+water <- read.csv('../../Data/ReducedWaterTraining.csv')
+library(gridExtra)
+p1 <- ggplot(water[water$population < 2000,], 
+       aes(x = population)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
+#ggsave('PopulationHist.png')
+p2 <- ggplot(water, aes(x = gps_height)) + 
+  geom_histogram(bins = 20) + ylim(c(0, 34000))
+#ggsave('gps_heightHist.png')
+p3 <- ggplot(water, 
+       aes(x = longitude)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
+#ggsave('longitudeHist.png')
+p4 <- ggplot(water, 
+       aes(x = latitude)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
+#ggsave('latitudeHist.png')
+grid.arrange(p1, p2, p3, p4, ncol = 2, nrow = 2)
+ggsave('HistsNotNormal.png')
