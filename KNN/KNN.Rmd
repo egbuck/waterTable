@@ -11,14 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Read in data, combine data, subset data, etc... 
 ```{r}
-#setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project")
-#setwd("C:/Users/snowi/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/Project")
+setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project/waterTable/")
+#setwd("C:/Users/snowi/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/Project/waterTable/")
 
 library(onehot)
 library(caret)
 
-X = read.csv("../Data/ReducedWaterTraining.csv")
-y = read.csv("../Data/waterTrainingLabels.csv")
+X = read.csv("Data/ReducedWaterTraining.csv")
+y = read.csv("Data/waterTrainingLabels.csv")
 
 X = as.data.frame(predict(onehot(X, max_levels = 21), X))
 
@@ -106,8 +106,8 @@ plot(accuracy)
 
 Reduced KNN
 ```{r}
-X = read.csv("../Data/ReducedWaterTraining.csv")
-y = read.csv("../Data/waterTrainingLabels.csv")
+X = read.csv("Data/ReducedWaterTraining.csv")
+y = read.csv("Data/waterTrainingLabels.csv")
 
 X_reduced = subset(X, select=-c(region, scheme_management, amount_tsh, population, gps_height, num_private))
 X_reduced = as.data.frame(predict(onehot(X_reduced, max_levels = 9), X_reduced))
@@ -135,4 +135,109 @@ time.taken
 
 #load("KNN3.RData")
 
+#                          Reference
+# Prediction                functional functional needs repair non functional
+#   functional                    6904                     580           1455
+#   functional needs repair        251                     328            129
+#   non functional                 878                     176           4149
+
+```
+
+
+
+
+
+```{r}
+library(onehot)
+library(caret)
+library(earth)
+
+setwd("D:/Dropbox/Document/William & Mary/2019 Spring/CSCI688.Data Mining/project/waterTable/")
+X = read.csv("Data/ReducedWaterTraining.csv")
+y = read.csv("Data/waterTrainingLabels.csv")
+
+X_reduced = subset(X, select=-c(region, scheme_management, amount_tsh, population, gps_height, num_private))
+data_set_reduced = merge(X_reduced, y, by="id")
+data_set_reduced = subset(data_set_reduced, select=-c(id, X))
+
+X_reduced_onehot = as.data.frame(predict(onehot(X_reduced, max_levels = 9), X_reduced))
+data_set_reduced_onehot = merge(X_reduced_onehot, y, by="id")
+data_set_reduced_onehot = subset(data_set_reduced_onehot, select=-c(id, X))
+
+#marsModel <- earth(status_group ~ ., data=data_set_reduced) 
+#ev <- evimp(marsModel)
+
+marsModel_onehot <- earth(status_group ~ ., data=data_set_reduced_onehot) 
+ev_onehot <- evimp(marsModel_onehot)
+
+var_imp_col = case.names(ev_onehot)
+var_imp_col = gsub("`", "", var_imp_col)
+colnames(data_set_reduced_onehot) = gsub(" ", "", colnames(data_set_reduced_onehot))
+data_set_reduced_onehot_imp = data_set_reduced_onehot[ , which(colnames(data_set_reduced_onehot) %in% var_imp_col)]
+data_set_reduced_onehot_imp$status_group = data_set_reduced$status_group
+
+set.seed(996)
+random_reduced_onehot_imp = data_set_reduced_onehot_imp[sample(1:nrow(data_set_reduced_onehot_imp)),]
+test_data_reduced = random_reduced_onehot_imp[1:floor(0.25 * nrow(data_set_reduced_onehot_imp)),]
+train_data_reduced = random_reduced_onehot_imp[-(1:floor(0.25 * nrow(data_set_reduced_onehot_imp))),]
+
+start.time = Sys.time()
+ctrl = trainControl(method="repeatedcv", number = 10, repeats = 3) 
+knnFit_reduced = train(status_group ~ ., data = train_data_reduced, method = "knn", 
+               metric = "Accuracy", trControl = ctrl, 
+               preProcess = c("center", "scale"), tuneLength = 20)
+plot(knnFit_reduced)
+knnPredict_reduced = predict(knnFit_reduced, newdata = test_data_reduced)
+confusionMatrix(knnPredict_reduced, test_data_reduced$status_group)
+end.time = Sys.time()
+time.taken = end.time - start.time
+time.taken 
+
+#load("KNN4.RData")
+
+#                          Reference
+# Prediction                functional functional needs repair non functional
+#   functional                    6997                     597           1342
+#   functional needs repair        204                     291             81
+#   non functional                 940                     217           4181
+```
+
+
+
+
+
+```{r}
+library(DMwR)
+
+print(prop.table(table(train_data_reduced$status_group)))
+
+smoted_train_data <- SMOTE(status_group ~., train_data_reduced, perc.over = 200, k = 7, perc.under = 200)
+#                          Reference
+# Prediction                functional functional needs repair non functional
+#   functional                    5634                     240           1273
+#   functional needs repair       1631                     757            814
+#   non functional                 876                     108           3517
+
+smoted_train_data <- SMOTE(status_group ~., train_data_reduced, perc.over = 400, k = 5, perc.under = 200)
+#                          Reference
+# Prediction                functional functional needs repair non functional
+#   functional                    5942                     283           1151
+#   functional needs repair       1253                     700            577
+#   non functional                 946                     122           3876
+
+print(prop.table(table(smoted_train_data$status_group)))
+
+start.time = Sys.time()
+ctrl = trainControl(method="repeatedcv", number = 10, repeats = 3) 
+knnFit_smote = train(status_group ~ ., data = smoted_train_data, method = "knn", 
+               metric = "Accuracy", trControl = ctrl, 
+               preProcess = c("center", "scale"), tuneLength = 20)
+plot(knnFit_smote)
+knnPredict_smote = predict(knnFit_smote, newdata = test_data_reduced)
+confusionMatrix(knnPredict_smote, test_data_reduced$status_group)
+end.time = Sys.time()
+time.taken = end.time - start.time
+time.taken 
+
+#load(smote.RData)
 ```
