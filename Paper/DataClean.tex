@@ -1,3 +1,41 @@
 \section{Data Cleaning} \label{dataClean}
-Test test
-$$7x^2 - 4$$
+The data cleaning process was mostly straightforward, though there were some key discoveries that helped immensely for the model fitting.
+
+We first started by getting rid of factors that had too many levels, as we feared adding hundreds of parameters was unnecessary and would lead to over-fitting by the model.  After inspecting the data to see how many levels there were for all of the factors, we set the boundary to be at most 21 levels for each factor.  The variables that were removed from this process were:
+
+\begin{enumerate}
+    \item date recorded: the date the row was entered. 356 levels
+    \item funder: who funded the well. 1,898 levels
+    \item installer: organization that installed the well. 2,146 levels
+    \item wpt name: name of the water point if there is one. 37,400 levels
+    \item subvillage: geographic location (also represented by other variables). 19,288 levels
+    \item lga: geographic location (also represented by other variables). 125 levels
+    \item ward: geographic location (also represented by other variables). 2092 levels
+    \item scheme name: who operates the water point. 2697 levels
+\end{enumerate}
+
+These variables also make sense to remove, as they appear to be more miscellaneous information that would not provide useful information for predictions (except for geographic location, which is represented by other variables remaining in the data set).  Additionally, the ``recorded by'' variable was a factor with only one level, which was ``GeoData Consultants Ltd'', and thus this was removed as well.
+
+There are many categorical predictors, and after looking again at the structure of the dataset we realize that many of them are duplicates of others.  By this we mean that some columns are exactly the same, or that some predictors just group some of the labels together, but represent the same measurement.  We examined each variable using the table() R command, to see all of the unique label names and counts and compare them with their similar counterparts.  In most cases, we chose to keep the predictor with less labels (or the one that grouped together more categories) so that there will be less parameter estimates, saving important degrees of freedom.  However, if we thought that the labels should not have been grouped together, and that their responses would vary significantly, we chose to keep the predictor with more variables.  The choices are summarized in Table \ref{tab:repeatFactors}.
+
+\begin{table}[h]
+\center
+\caption{Repeat factors that were removed due to containing the same type of information as others.}
+\begin{tabular}{|c|c|}
+\hline
+     Removed predictors & Represented By \\
+     \hline
+     
+extraction type, extraction type group   &  extraction type class \\
+management  & management group \\
+payment type    & payment   \\
+water quality   & quality group   \\
+quantity group     & quantity    \\
+source type, source class  & source \\
+waterpoint type   & waterpoint type group \\
+\hline
+\end{tabular}
+\label{tab:repeatFactors}
+\end{table}
+
+There were minor relabeling of factor labels and grouping of certain labels together that did not have many counts into an ``other'' category, but these were the main steps taken in the data cleaning process.
