@@ -86,7 +86,7 @@ plotBars(replace, 'Actual Class: Non Functional')
 
 plotBars2 <- function(data, title) {
   print(ggplot(data, aes(Model, Percent * 100)) + 
-          geom_bar(aes(fill = Predicted), position = position_dodge(.7), stat = 'identity') + 
+          geom_bar(aes(fill = Predicted), position = 'dodge', stat = 'identity') + 
           ylab('Percent') + ggtitle(title) + xlab("Class") + ylim(c(0,100)))
 }
 

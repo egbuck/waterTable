@@ -44,10 +44,21 @@ Section \ref{dataClean} will discuss the data cleaning process.  Exploratory plo
 
 \include{RandForest}
 
-\section{Conclusions}
+\section{Comparing the Models}
+Figure \ref{fig:modelComp} shows a bar graph comparing the performances of the different models.  The models seem to perform very similarly on the functional water points, as there are so many observations of this type.  The models appeared to suffer much more when trying to predict the ``functional needs repair'' class, as there are not many observations in this  category (comparatively).  However, the oversampling method with the random forest model did help to combat this. This method also comes close to doing the best on the non functional class, and these two classes are the most important to predict correctly, as the purpose is to identify broken water points.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width = 0.7\textwidth]{Figures/percentAccuracyByClass.png}
+    \caption{Comparing the models' accuracy of predicting each target class}
+    \label{fig:modelComp}
+\end{figure}
+
+Overall, the random forest model outperformed the other fitting methods, and this was without requiring excessive tuning of the model.  The pre-processing of the data was enough to be able to fit a relatively accurate model, and with the addition of oversampling, we were able to achieve more balanced class accuracy rates.
 
 \newpage
 \section{Appendix}
+
 
 
 %The data set can be found online at \\ %\url{https://www.drivendata.org/competitions/7/pump-it-up-data-mining-the-water-table/page/23/}
