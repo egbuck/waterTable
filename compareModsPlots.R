@@ -44,15 +44,15 @@ plotConf <- function(data, title) {
     ylim(rev(levels(data$Predicted))) +
     scale_fill_gradient(low = "white", high = "steelblue") + ggtitle(title))
 }
-setwd('../Paper/Figures/')
+#setwd('../Paper/Figures/')
 plotConf(confMats$KNN, title = "KNN Classification")
-ggsave('KNNConfMatrix.png')
+#ggsave('KNNConfMatrix.png')
 plotConf(confMats$Log, title = "Logistic Regression")
-ggsave('LogConfMatrix.png')
+#ggsave('LogConfMatrix.png')
 plotConf(confMats$RandForest, title = "Random Forest")
-ggsave('RandForestConfMatrix.png')
+#ggsave('RandForestConfMatrix.png')
 plotConf(confMats$OverSamp, title = "Random Forest with Over-Sampling")
-ggsave('OverSampleConfMatrix.png')
+#ggsave('OverSampleConfMatrix.png')
 
 
 plotBars <- function(data, title) {
@@ -77,27 +77,36 @@ replace <- allData[allData$Actual == 'non functional',
                    c('Model', 'Predicted', 'Percent')]
 
 plotBars(functional, 'Actual Class: Functional')
-ggsave('FunctionalBarComps.png')
+#ggsave('FunctionalBarComps.png')
 plotBars(broken, 'Actual Class: Functional Needs Repair')
-ggsave('BrokenBarComps.png')
+#ggsave('BrokenBarComps.png')
 plotBars(replace, 'Actual Class: Non Functional')
-ggsave('ReplaceBarComps.png')
+#ggsave('ReplaceBarComps.png')
 
 
+plotBars2 <- function(data, title) {
+  print(ggplot(data, aes(Model, Percent * 100)) + 
+          geom_bar(aes(fill = Predicted), position = position_dodge(.7), stat = 'identity') + 
+          ylab('Percent') + ggtitle(title) + xlab("Class") + ylim(c(0,100)))
+}
 
-water <- read.csv('../../Data/ReducedWaterTraining.csv')
-library(gridExtra)
-p1 <- ggplot(water[water$population < 2000,], 
-       aes(x = population)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
-#ggsave('PopulationHist.png')
-p2 <- ggplot(water, aes(x = gps_height)) + 
-  geom_histogram(bins = 20) + ylim(c(0, 34000))
-#ggsave('gps_heightHist.png')
-p3 <- ggplot(water, 
-       aes(x = longitude)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
-#ggsave('longitudeHist.png')
-p4 <- ggplot(water, 
-       aes(x = latitude)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
-#ggsave('latitudeHist.png')
-grid.arrange(p1, p2, p3, p4, ncol = 2, nrow = 2)
-ggsave('HistsNotNormal.png')
+truePreds <- allData[allData$Predicted == allData$Actual,]
+plotBars2(truePreds, 'Percent Accuracy By Model')
+
+
+# water <- read.csv('../../Data/ReducedWaterTraining.csv')
+# library(gridExtra)
+# p1 <- ggplot(water[water$population < 2000,], 
+#        aes(x = population)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
+# #ggsave('PopulationHist.png')
+# p2 <- ggplot(water, aes(x = gps_height)) + 
+#   geom_histogram(bins = 20) + ylim(c(0, 34000))
+# #ggsave('gps_heightHist.png')
+# p3 <- ggplot(water, 
+#        aes(x = longitude)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
+# #ggsave('longitudeHist.png')
+# p4 <- ggplot(water, 
+#        aes(x = latitude)) + geom_histogram(bins = 20) + ylim(c(0, 34000))
+# #ggsave('latitudeHist.png')
+# grid.arrange(p1, p2, p3, p4, ncol = 2, nrow = 2)
+# ggsave('HistsNotNormal.png')
