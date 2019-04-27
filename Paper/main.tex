@@ -11,18 +11,9 @@
 \maketitle
 
 \section{Problem Description}
-This project stems from finding a data set from a competition on DrivenData.  The competition is called ``Pump it Up: Data Mining the Water Table'', and provides a data set with different water points.  There are six different types of water points:
+This project stems from finding a data set from a competition on DrivenData. The competition is called ``Pump it Up: Data Mining the Water Table'', and provides a data set with different water points. There are six different types of water points: cattle trough, communal standpipe, dam, hand pump, improved spring, and other.
 
-\begin{enumerate}
-    \item Cattle Trough
-    \item Communal Standpipe
-    \item Dam
-    \item Hand Pump
-    \item Improved Spring
-    \item Other
-\end{enumerate}
-
-The goal is to accurately predict the operating condition of these water points located in Tanzania.  There are three different classes for this response variable, which are
+The goal is to accurately predict the operating condition of these water points located in Tanzania. There are three different classes for this response variable, which are
 
 \begin{enumerate}
     \item functional
@@ -30,9 +21,9 @@ The goal is to accurately predict the operating condition of these water points 
     \item non functional
 \end{enumerate}
 
-Thus, this is a classification problem.  There are 39 different predictors for this data set, nine of which are continuous covariates.  Early data exploration reveals that none of these continuous covariates appear to resemble a normal distribution, and thus LDA and QDA most likely are not suitable choices.  However, an adapted logistic regression may prove to be fruitful in this analysis, as well as a potential random forest model.  KNN classification may be suitable as well, since there are a large number of training observations (59,400).
+Thus, this is a classification problem. There are 39 different predictors for this data set, nine of which are continuous covariates. Early data exploration reveals that none of these continuous covariates appear to resemble a normal distribution, and thus LDA and QDA most likely are not suitable choices. However, an adapted logistic regression may prove to be fruitful in this analysis, as well as a potential random forest model. KNN classification may be suitable as well, since there are a large number of training observations (59,400).
 
-Section \ref{dataClean} will discuss the data cleaning process.  Exploratory plots are shown in Section \ref{explore}.  The KNN analysis follows in Section \ref{knn}.  Section \ref{logistic} goes through the logistic regression results, and Section \ref{randForest} explains the results from random forests.
+Section \ref{dataClean} will discuss the data cleaning process. Exploratory plots are shown in Section \ref{explore}. The KNN analysis follows in Section \ref{knn}. Section \ref{logistic} goes through the logistic regression results, and Section \ref{randForest} explains the results from random forests. In Section \ref{comparasion}, we are going to compare performance between models.
 
 \include{DataClean}
 
@@ -44,7 +35,7 @@ Section \ref{dataClean} will discuss the data cleaning process.  Exploratory plo
 
 \include{RandForest}
 
-\section{Comparing the Models}
+\section{Comparing the Models} \label{comparasion}
 Figure \ref{fig:modelComp} shows a bar graph comparing the performances of the different models.  The models seem to perform very similarly on the functional water points, as there are so many observations of this type.  The models appeared to suffer much more when trying to predict the ``functional needs repair'' class, as there are not many observations in this  category (comparatively).  However, the oversampling method with the random forest model did help to combat this. This method also comes close to doing the best on the non functional class, and these two classes are the most important to predict correctly, as the purpose is to identify broken water points.
 
 \begin{figure}[!h]
