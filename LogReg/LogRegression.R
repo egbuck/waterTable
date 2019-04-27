@@ -1,0 +1,91 @@
+# Load the packages:
+library(ggplot2)
+library(dplyr)
+require(nnet)
+#install.packages('caret')
+#install.packages('e1071')
+library(caret)
+library(e1071)
+
+# Load the data:
+
+#setwd("~/1_wiliiam_and_mary/classes/DataMining/DataMining-Assignments/TeamProject")
+clean_data <- read.csv("../Data/ReducedWaterTraining.csv")
+clean_data <- clean_data[-1]
+trainLabels <- read.csv("../Data/waterTrainingLabels.csv")
+head(clean_data, 2)
+
+#Merge the dataset with the labels set:
+
+clean_data_1 <- merge(clean_data, trainLabels)
+colnames(clean_data_1)
+
+#Start splitting the data into training and test sets:
+
+set.seed(4321)
+randomized = sample(1:nrow(clean_data))
+train_set = randomized[1:floor(length(randomized)/3)]
+test_set = setdiff(randomized,train_set)
+train_d = clean_data_1[train_set,]
+test_d = clean_data_1[test_set,]
+head(train_d, 2)
+head(test_d, 2)
+
+#Model with all variables included (excluding the id)
+
+train_model <- multinom(status_group ~ ., data = train_d[, -1])
+
+#Get training accuracy information:
+
+train_pred = predict(train_model)
+#summary(train_pred)
+# use caret package to see the confusion matrix
+train_conf = confusionMatrix(data=train_pred,reference=train_d$status_group)
+train_conf
+# Old: 72.36% accuracy
+# New: 73.41%
+
+
+# Get test set predictions and accuracy
+test_pred = predict(train_model,newdata=test_d)
+test_conf = confusionMatrix(data=test_pred,reference=test_d$status_group)
+test_conf
+# Old: 71.59% accuracy
+# New: 72.68%
+                    
+# Calculate training and test error rates
+train_err = mean(train_pred!=train_d$status_group)
+test_err = mean(test_pred!=test_d$status_group)
+train_err
+test_err
+
+# Now try on the full training set:
+
+log_model <- multinom(status_group ~ ., data = clean_data_1[, -1])
+
+#Get accuracy information:
+
+log_pred = predict(log_model)
+#summary(train_pred)
+# use caret package to see the confusion matrix
+log_conf = confusionMatrix(data=log_pred, reference=clean_data_1$status_group)
+log_conf
+# 73.22% accuracy
+
+# Load the test data for the competition submission 
+clean_test <- read.csv("../Data/ReducedWaterTest.csv")
+head(clean_test,2)
+
+#Try to get predictions for the complete Test data:
+test_log_pred = predict(log_model, newdata=clean_test)
+summary(test_log_pred)
+
+#Add the predicted labels to the test data set
+
+clean_test$status_group <- test_log_pred
+head(clean_test, 2)
+
+# write new label data to file
+write.csv(clean_test, "../Data/Label_Log_1.csv")
+
+# Got score of 0.7143 for the competition submission. 
